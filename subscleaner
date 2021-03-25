@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 import re
-from sys import exit
+import sys
+import unicodedata
+import os
+import time
 
 try:
     import pysrt
@@ -62,26 +65,53 @@ def ads_in_line(line):
             return True
     return False
 
+def slugify(value, allow_unicode=False):
+    """
+    Taken from https://github.com/django/django/blob/master/django/utils/text.py
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '-', value).strip('-_')
+
 if __name__ == '__main__':
     from sys import argv
     from shutil import move
 
-    if '-h' in argv or len(argv) == 1:
-        print('Usage: python3 cleaner.py <sub1> <sub2> <sub3> <...>')
-        exit()
+    print("starting script")
+    for filename in sys.stdin:
+        #filename = "\"" + filename + "\""
+        try:
+            filename = filename.strip()
+            #print("Analyzing:", filename)
+            created = os.path.getctime(filename)
+            alreadyProcessed = time.mktime(time.strptime('2020-03-25 00:00:00', '%Y-%m-%d %H:%M:%S'))
+            if created > alreadyProcessed:
+                print("already processed " + filename)
+                continue
+            else:
+                print("Analyzing:", filename)
 
-    for filename in argv[1:]:
-        print("Analyzing:", filename)
-        with open(filename, 'rb') as f:
-            encoding = chardet.detect(f.read())
-        encoding = encoding['encoding']
-        subs = pysrt.open(filename, encoding=encoding)
-        modified = False
-        for i, line in enumerate(subs):
-            if ads_in_line(line.text):
-                print("Removing: "+str(line)+"\n")
-                del subs[i]
-                modified = True
-        if modified:
-            move(filename, filename+'.bak')
-            subs.save(filename)
+            with open(filename, 'rb') as f:
+                encoding = chardet.detect(f.read())
+            encoding = encoding['encoding']
+            subs = pysrt.open(filename, encoding=encoding)
+            modified = False
+            for i, line in enumerate(subs):
+                if ads_in_line(line.text):
+                    print("Removing: "+str(line)+"\n")
+                    del subs[i]
+                    modified = True
+            if modified:
+                #move(filename, filename+'.bak')
+                subs.save(filename)
+        except:
+            continue
+    print ("done")
