@@ -18,10 +18,12 @@ or `chmod +x` the script and copy it in a $PATH directory.
 
 ## Usage
 
-Run the script giving as arguments the subtitle files. In case some ads are found inside the file, the old file is moved to <basename>.bak and the new file written with the same name.
-Example:
+Script will accept piped file names.  
 
 ```
-subscleaner building_on_the_past.en.srt
+find . -name '*.srt' | subscleaner
 ```
+
+## Location of srt's
+/Volumes/Emby/metadata/library
 
