@@ -93,7 +93,7 @@ if __name__ == '__main__':
             filename = filename.strip()
             #print("Analyzing:", filename)
             created = os.path.getctime(filename)
-            alreadyProcessed = time.mktime(time.strptime('2021-05-05 00:00:00', '%Y-%m-%d %H:%M:%S'))
+            alreadyProcessed = time.mktime(time.strptime('2021-05-13 00:00:00', '%Y-%m-%d %H:%M:%S'))
             if created < alreadyProcessed:
                 print("already processed " + filename)
                 continue
